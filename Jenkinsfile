@@ -12,19 +12,19 @@ pipeline {
           agent {
             dockerfile {
               filename 'Dockerfile_base-bionic'
-              dir 'docker/px4-dev'
+              dir 'docker'
               args '-e CCACHE_BASEDIR=$WORKSPACE -v ${CCACHE_DIR}:${CCACHE_DIR}:rw'
             }
           }
           steps {
-            git 'https://github.com/PX4/Firmware.git'
-            dir(path: 'Firmware') {
+            dir('Firmware') {
+              git url: 'https://github.com/PX4/Firmware.git', branch: 'master'
               sh 'export'
-              sh 'make clean'
+              sh 'make distclean'
               sh 'ccache -z'
-              sh 'make px4_sitl_default'
+              sh 'make px4_sitl_rtps'
               sh 'ccache -s'
-              sh 'make clean'
+              sh 'make distclean'
             }
           }
         }
@@ -33,43 +33,61 @@ pipeline {
           agent {
             dockerfile {
               filename 'Dockerfile_base-xenial'
-              dir 'docker/px4-dev'
+              dir 'docker'
               args '-e CCACHE_BASEDIR=$WORKSPACE -v ${CCACHE_DIR}:${CCACHE_DIR}:rw'
             }
           }
           steps {
-            git 'https://github.com/PX4/Firmware.git'
-            dir(path: 'Firmware') {
+            dir('Firmware') {
+              git url: 'https://github.com/PX4/Firmware.git', branch: 'master'
               sh 'export'
-              sh 'make clean'
+              sh 'make distclean'
               sh 'ccache -z'
-              sh 'make px4_sitl_default'
+              sh 'make px4_sitl_rtps'
               sh 'ccache -s'
-              sh 'make clean'
+              sh 'make distclean'
             }
           }
         }
 
-        stage('px4-docs') {
+        stage('px4-dev-base-archlinux') {
           agent {
             dockerfile {
-              filename 'Dockerfile_docs'
-              dir 'docker/px4-dev'
+              filename 'Dockerfile_base-archlinux'
+              dir 'docker'
               args '-e CCACHE_BASEDIR=$WORKSPACE -v ${CCACHE_DIR}:${CCACHE_DIR}:rw'
             }
           }
-          environment {
-            HOME = "${WORKSPACE}"
-          }
           steps {
-            git 'https://github.com/PX4/Devguide.git'
-            dir(path: 'Devguide') {
+            dir('Firmware') {
+              git url: 'https://github.com/PX4/Firmware.git', branch: 'master'
               sh 'export'
-              sh 'gitbook install'
-              sh 'gitbook build'
+              sh 'make distclean'
+              sh 'ccache -z'
+              sh 'make px4_sitl_rtps'
+              sh 'ccache -s'
+              sh 'make distclean'
             }
           }
         }
+
+        // stage('px4-docs') {
+        //   agent {
+        //     dockerfile {
+        //       filename 'Dockerfile_docs'
+        //       dir 'docker'
+        //       args '-e CCACHE_BASEDIR=$WORKSPACE -v ${CCACHE_DIR}:${CCACHE_DIR}:rw'
+        //     }
+        //   }
+        //   steps {
+        //     dir('Devguide') {
+        //       git url: 'https://github.com/PX4/Devguide.git', branch: 'master'
+        //       sh 'export'
+        //       sh 'gitbook install'
+        //       sh 'gitbook build'
+        //     }
+        //   }
+        // }
 
       } // parallel
     } // stage Build
@@ -81,7 +99,7 @@ pipeline {
           agent {
             dockerfile {
               filename 'Dockerfile_clang'
-              dir 'docker/px4-dev'
+              dir 'docker'
               args '-e CCACHE_BASEDIR=$WORKSPACE -v ${CCACHE_DIR}:${CCACHE_DIR}:rw'
             }
           }
@@ -90,15 +108,15 @@ pipeline {
               CXX = 'clang++'
           }
           steps {
-            git 'https://github.com/PX4/Firmware.git'
-            dir(path: 'Firmware') {
+            dir('Firmware') {
+              git url: 'https://github.com/PX4/Firmware.git', branch: 'master'
               sh 'export'
-              sh 'make clean'
+              sh 'make distclean'
               sh 'ccache -z'
               sh 'make px4_sitl_default'
               sh 'make px4_sitl_default package'
               sh 'ccache -s'
-              sh 'make clean'
+              sh 'make distclean'
             }
           }
         }
@@ -107,19 +125,19 @@ pipeline {
           agent {
             dockerfile {
               filename 'Dockerfile_nuttx'
-              dir 'docker/px4-dev'
+              dir 'docker'
               args '-e CCACHE_BASEDIR=$WORKSPACE -v ${CCACHE_DIR}:${CCACHE_DIR}:rw'
             }
           }
           steps {
-            git 'https://github.com/PX4/Firmware.git'
-            dir(path: 'Firmware') {
+            dir('Firmware') {
+              git url: 'https://github.com/PX4/Firmware.git', branch: 'master'
               sh 'export'
-              sh 'make clean'
+              sh 'make distclean'
               sh 'ccache -z'
               sh 'make px4_fmu-v2_default'
               sh 'ccache -s'
-              sh 'make clean'
+              sh 'make distclean'
             }
           }
         }
@@ -128,50 +146,149 @@ pipeline {
           agent {
             dockerfile {
               filename 'Dockerfile_nuttx_clang'
-              dir 'docker/px4-dev'
+              dir 'docker'
               args '-e CCACHE_BASEDIR=$WORKSPACE -v ${CCACHE_DIR}:${CCACHE_DIR}:rw'
             }
           }
           steps {
-            git 'https://github.com/PX4/Firmware.git'
-            dir(path: 'Firmware') {
+            dir('Firmware') {
+              git url: 'https://github.com/PX4/Firmware.git', branch: 'master'
               sh 'export'
-              sh 'make clean'
+              sh 'make distclean'
               sh 'ccache -z'
               sh 'make scan-build'
               sh 'ccache -s'
-              sh 'make clean'
+              sh 'make distclean'
             }
           }
         }
 
-        stage('px4-dev-simulation') {
+        stage('px4-dev-simulation-xenial') {
           agent {
             dockerfile {
-              filename 'Dockerfile_simulation'
-              dir 'docker/px4-dev'
+              filename 'Dockerfile_simulation-xenial'
+              dir 'docker'
               args '-e CCACHE_BASEDIR=$WORKSPACE -v ${CCACHE_DIR}:${CCACHE_DIR}:rw -e HOME=$WORKSPACE'
             }
           }
           steps {
-            git 'https://github.com/PX4/Firmware.git'
-            dir(path: 'Firmware') {
+            dir('Firmware') {
+              git url: 'https://github.com/PX4/Firmware.git', branch: 'master'
               sh 'export'
-              sh 'make clean'
+              sh 'make distclean'
               sh 'ccache -z'
               sh 'make px4_sitl_default sitl_gazebo'
               sh 'make px4_sitl_default package'
               sh 'ccache -s'
-              sh 'make clean'
+              sh 'make distclean'
             }
           }
         }
 
+        stage('px4-dev-simulation-bionic') {
+          agent {
+            dockerfile {
+              filename 'Dockerfile_simulation-bionic'
+              dir 'docker'
+              args '-e CCACHE_BASEDIR=$WORKSPACE -v ${CCACHE_DIR}:${CCACHE_DIR}:rw -e HOME=$WORKSPACE'
+            }
+          }
+          steps {
+            dir('Firmware') {
+              git url: 'https://github.com/PX4/Firmware.git', branch: 'master'
+              sh 'export'
+              sh 'make distclean'
+              sh 'ccache -z'
+              sh 'make px4_sitl_default sitl_gazebo'
+              sh 'make px4_sitl_default package'
+              sh 'ccache -s'
+              sh 'make distclean'
+            }
+          }
+        }
+
+        stage('px4-dev-armhf') {
+          agent {
+            dockerfile {
+              filename 'Dockerfile_armhf'
+              dir 'docker'
+              args '-e CCACHE_BASEDIR=$WORKSPACE -v ${CCACHE_DIR}:${CCACHE_DIR}:rw'
+            }
+          }
+          steps {
+            dir('Firmware') {
+              git url: 'https://github.com/PX4/Firmware.git', branch: 'master'
+              sh 'export'
+              sh 'make distclean'
+              sh 'ccache -z'
+              sh 'make aerotenna_ocpoc_ubuntu'
+              sh 'make aerotenna_ocpoc_ubuntu package'
+              sh 'ccache -s'
+              sh 'make distclean'
+            }
+          }
+        }
+
+        stage('px4-dev-raspi') {
+          agent {
+            dockerfile {
+              filename 'Dockerfile_raspi'
+              dir 'docker'
+              args '-e CCACHE_BASEDIR=$WORKSPACE -v ${CCACHE_DIR}:${CCACHE_DIR}:rw'
+            }
+          }
+          steps {
+            dir('Firmware') {
+              git url: 'https://github.com/PX4/Firmware.git', branch: 'master'
+              sh 'export'
+              sh 'make distclean'
+              sh 'ccache -z'
+              sh 'make emlid_navio2_cross'
+              sh 'make emlid_navio2_cross package'
+              sh 'ccache -s'
+              sh 'make distclean'
+            }
+          }
+        }
+
+        stage('px4-dev-ecl') {
+          agent {
+            dockerfile {
+              filename 'Dockerfile_ecl'
+              dir 'docker'
+              args '-e CCACHE_BASEDIR=$WORKSPACE -v ${CCACHE_DIR}:${CCACHE_DIR}:rw'
+            }
+          }
+          steps {
+            dir('ecl') {
+              git url: 'https://github.com/PX4/ecl.git', branch: 'master'
+              sh 'export'
+              sh 'ccache -z'
+              sh '''#!/bin/bash -l
+                if [ ! -d build ]; then
+                  mkdir build;
+                fi
+                cd build;
+                cmake ..;
+                make clean;
+                cmake --build .;
+              '''
+              sh 'ccache -s'
+              sh 'rm -rf build'
+            }
+          }
+        }
+
+      } // parallel
+    } // stage Build (on base)
+
+    stage('Build ROS1 (after simulation containers)') {
+      parallel {
         stage('px4-dev-ros-melodic') {
           agent {
             dockerfile {
               filename 'Dockerfile_ros-melodic'
-              dir 'docker/px4-dev'
+              dir 'docker'
               args '-e CCACHE_BASEDIR=$WORKSPACE -v ${CCACHE_DIR}:${CCACHE_DIR}:rw -e HOME=$WORKSPACE'
             }
           }
@@ -184,13 +301,21 @@ pipeline {
             '''
             sh 'rm -rf catkin_ws'
           }
+          post {
+            always {
+              sh 'rm -rf catkin_ws'
+            }
+            failure {
+              archiveArtifacts(allowEmptyArchive: false, artifacts: '.ros/**/*.xml, .ros/**/*.log')
+            }
+          }
         }
 
         stage('px4-dev-ros-kinetic') {
           agent {
             dockerfile {
               filename 'Dockerfile_ros-kinetic'
-              dir 'docker/px4-dev'
+              dir 'docker'
               args '-e CCACHE_BASEDIR=$WORKSPACE -v ${CCACHE_DIR}:${CCACHE_DIR}:rw -e HOME=$WORKSPACE'
             }
           }
@@ -201,76 +326,18 @@ pipeline {
               source /opt/ros/kinetic/setup.bash;
               catkin build -j$(nproc) -l$(nproc);
             '''
-            sh 'rm -rf catkin_ws'
           }
-        }
-
-        stage('px4-dev-armhf') {
-          agent {
-            dockerfile {
-              filename 'Dockerfile_armhf'
-              dir 'docker/px4-dev'
-              args '-e CCACHE_BASEDIR=$WORKSPACE -v ${CCACHE_DIR}:${CCACHE_DIR}:rw'
+          post {
+            always {
+              sh 'rm -rf catkin_ws'
             }
-          }
-          steps {
-            git 'https://github.com/PX4/Firmware.git'
-            dir(path: 'Firmware') {
-              sh 'export'
-              sh 'make clean'
-              sh 'ccache -z'
-              sh 'make aerotenna_ocpoc_ubuntu'
-              sh 'make aerotenna_ocpoc_ubuntu package'
-              sh 'ccache -s'
-              sh 'make clean'
+            failure {
+              archiveArtifacts(allowEmptyArchive: false, artifacts: '.ros/**/*.xml, .ros/**/*.log')
             }
           }
         }
-
-        stage('px4-dev-raspi') {
-          agent {
-            dockerfile {
-              filename 'Dockerfile_raspi'
-              dir 'docker/px4-dev'
-              args '-e CCACHE_BASEDIR=$WORKSPACE -v ${CCACHE_DIR}:${CCACHE_DIR}:rw'
-            }
-          }
-          steps {
-            git 'https://github.com/PX4/Firmware.git'
-            dir(path: 'Firmware') {
-              sh 'export'
-              sh 'make clean'
-              sh 'ccache -z'
-              sh 'make emlid_navio2_cross'
-              sh 'make emlid_navio2_cross package'
-              sh 'ccache -s'
-              sh 'make clean'
-            }
-          }
-        }
-
-        stage('px4-dev-ecl') {
-          agent {
-            dockerfile {
-              filename 'Dockerfile_ecl'
-              dir 'docker/px4-dev'
-              args '-e CCACHE_BASEDIR=$WORKSPACE -v ${CCACHE_DIR}:${CCACHE_DIR}:rw'
-            }
-          }
-          environment {
-              CC = 'clang'
-              CXX = 'clang++'
-          }
-          steps {
-            git 'https://github.com/PX4/Firmware.git'
-            dir(path: 'Firmware') {
-              sh 'export'
-            }
-          }
-        }
-
       } // parallel
-    } // stage Build (on base)
+    } // Build ROS1 (after simulation containers)
 
     stage('Build ROS2 (after ROS1)') {
       parallel {
@@ -279,18 +346,25 @@ pipeline {
           agent {
             dockerfile {
               filename 'Dockerfile_ros2-ardent'
-              dir 'docker/px4-dev'
+              dir 'docker'
               args '-e CCACHE_BASEDIR=$WORKSPACE -v ${CCACHE_DIR}:${CCACHE_DIR}:rw -e HOME=$WORKSPACE'
             }
           }
           steps {
-            sh 'git clone --recursive https://github.com/PX4/Firmware.git catkin_ws/src/Firmware'
+            sh 'git clone --recursive https://github.com/PX4/Firmware.git colcon_ws/src/Firmware'
             sh '''#!/bin/bash -l
-              cd catkin_ws;
+              cd colcon_ws;
               source /opt/ros/ardent/setup.bash;
               colcon build --event-handlers console_direct+ --symlink-install;
             '''
-            sh 'rm -rf catkin_ws'
+          }
+          post {
+            always {
+              sh 'rm -rf colcon_ws'
+            }
+            failure {
+              archiveArtifacts(allowEmptyArchive: false, artifacts: '.ros/**/*.xml, .ros/**/*.log')
+            }
           }
         }
 
@@ -298,7 +372,7 @@ pipeline {
           agent {
             dockerfile {
               filename 'Dockerfile_ros2-bouncy'
-              dir 'docker/px4-dev'
+              dir 'docker'
               args '-e CCACHE_BASEDIR=$WORKSPACE -v ${CCACHE_DIR}:${CCACHE_DIR}:rw -e HOME=$WORKSPACE'
             }
           }
@@ -309,7 +383,14 @@ pipeline {
               source /opt/ros/bouncy/setup.bash;
               colcon build --event-handlers console_direct+ --symlink-install;
             '''
-            sh 'rm -rf colcon_ws'
+          }
+          post {
+            always {
+              sh 'rm -rf colcon_ws'
+            }
+            failure {
+              archiveArtifacts(allowEmptyArchive: false, artifacts: '.ros/**/*.xml, .ros/**/*.log')
+            }
           }
         }
 
@@ -317,7 +398,7 @@ pipeline {
           agent {
             dockerfile {
               filename 'Dockerfile_ros2-crystal'
-              dir 'docker/px4-dev'
+              dir 'docker'
               args '-e CCACHE_BASEDIR=$WORKSPACE -v ${CCACHE_DIR}:${CCACHE_DIR}:rw -e HOME=$WORKSPACE'
             }
           }
@@ -328,9 +409,41 @@ pipeline {
               source /opt/ros/bouncy/setup.bash;
               colcon build --event-handlers console_direct+ --symlink-install;
             '''
-            sh 'rm -rf colcon_ws'
           }
+          post {
+            always {
+              sh 'rm -rf colcon_ws'
+            }
+            failure {
+              archiveArtifacts(allowEmptyArchive: false, artifacts: '.ros/**/*.xml, .ros/**/*.log')
+            }
+          }
+        }
 
+        stage('px4-dev-ros2-dashing') {
+          agent {
+            dockerfile {
+              filename 'Dockerfile_ros2-dashing'
+              dir 'docker'
+              args '-e CCACHE_BASEDIR=$WORKSPACE -v ${CCACHE_DIR}:${CCACHE_DIR}:rw -e HOME=$WORKSPACE'
+            }
+          }
+          steps {
+            sh 'git clone --recursive https://github.com/PX4/Firmware.git colcon_ws/src/Firmware'
+            sh '''#!/bin/bash -l
+              cd colcon_ws;
+              source /opt/ros/dashing/setup.bash;
+              colcon build --event-handlers console_direct+ --symlink-install;
+            '''
+          }
+          post {
+            always {
+              sh 'rm -rf colcon_ws'
+            }
+            failure {
+              archiveArtifacts(allowEmptyArchive: false, artifacts: '.ros/**/*.xml, .ros/**/*.log')
+            }
+          }
         }
       } // parallel
     } // Build ROS2 (after ROS1)
